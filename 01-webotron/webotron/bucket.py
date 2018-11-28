@@ -6,10 +6,10 @@ from pathlib import Path
 import mimetypes
 from functools import reduce
 
+from hashlib import md5
 import boto3
 from botocore.exceptions import ClientError
 
-from hashlib import md5
 import util
 
 
@@ -28,10 +28,10 @@ class BucketManager:
         )
         self.manifest = {}
 
-    def get_bucket(self, bucket_name)
+    def get_bucket(self, bucket_name):
         """Get a bucket by name."""
         return self.s3.Bucket(bucket_name)
-        
+
     def get_region_name(self, bucket):
         """Get the bucket's region name."""
         bucket_location = \
@@ -98,7 +98,6 @@ class BucketManager:
             }
         })
 
-
     def load_manifest(self, bucket):
         """Load manifest for caching purposes."""
         paginator = self.s3.meta.client.get_paginator('list_objects_v2')
@@ -106,8 +105,6 @@ class BucketManager:
             for obj in page.get('Contents', []):
                 self.manifest[obj['Key']] = obj['ETag']
 
-                
-    
     @staticmethod
     def hash_data(data):
         """Generate md5 hash for data."""
@@ -116,10 +113,9 @@ class BucketManager:
 
         return hash
 
-    
     def gen_etag(self, path):
         """Generate etag for file."""
-        hashes =[]
+        hashes = []
 
         with open(path, 'rb') as f:
             while True:
@@ -138,15 +134,14 @@ class BucketManager:
             hash = self.hash_data(reduce(lambda x, y: x + y, (h.digest() for h in hashes)))
             return '"{}-{}"'.format(hash.hexdigest(), len(hashes))
 
-      
     def upload_file(self, bucket, path, key):
         """Upload path to s3_bucket at key."""
         content_type = mimetypes.guess_type(key)[0] or 'text/plain'
-       
+
         etag = self.gen_etag(path)
         if self.manifest.get(key, '') == etag:
             print("Skipping {}, etags match".format(key))
-            return       
+            return
         return bucket.upload_file(
             path,
             key,
@@ -164,6 +159,7 @@ class BucketManager:
         root = Path(pathname).expanduser().resolve()
 
         def handle_directory(target):
+            """Handle the directory of the bucket relevant to location."""
             for p in target.iterdir():
                 if p.is_dir():
                     handle_directory(p)
