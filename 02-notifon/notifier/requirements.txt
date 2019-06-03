@@ -1,2 +1,2 @@
 sodapy==1.4.6
-requests==2.18.4
+requests>=2.20.0
